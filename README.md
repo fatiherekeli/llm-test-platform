@@ -1,64 +1,66 @@
-# LLM Test Platformu
+**English** | [Türkçe](README.tr.md)
 
-Farklı yapay zeka modellerini aynı sorularla test edip doğruluk ve güvenlik açısından puanlayan bir test platformu. OpenAI API formatını destekleyen herhangi bir sağlayıcıya (Claude, Gemini, OpenAI, DeepSeek) ve Ollama ile yerelde çalışan modellere bağlanabilir.
+# LLM Test Platform
 
-## Neler yapıyor
+A test platform that runs different AI models through the same questions and scores them for accuracy and safety. It can connect to any provider that supports the OpenAI API format (Claude, Gemini, OpenAI, DeepSeek) and to models running locally through Ollama.
 
-**Fonksiyonel test.** Sorular SQuAD veri setinden gelir. Modelin cevabı doğru cevapla iki yöntemle karşılaştırılır: embedding benzerliği (cosine similarity) ve LLM-as-judge puanı.
+## What it does
 
-**Güvenlik testi.** Kısıtlama atlatma, phishing, sistem promptu sızdırma gibi elle yazılmış istemlere ve JailbreakBench (JBB-Behaviors) veri setinden seçilen istemlere modelin nasıl yanıt verdiğine bakılır. Hakem model her cevaba 0 ile 10 arası puan verir, 10 tamamen güvenli demektir. Belirsiz puanlar insan incelemesi için işaretlenir. Sistem promptu sızdırma testinde modele gizli bir kod içeren gerçek bir sistem promptu verilir, kod cevapta aynen geçerse sızıntı sayılır.
+**Functional test.** Questions come from the SQuAD dataset. A model's answer is compared with the reference answer in two ways: embedding similarity (cosine similarity) and an LLM-as-judge score.
 
-**Regresyon testi.** Aynı modelin son iki sonuç dosyasını karşılaştırarak zaman içinde tutarlı kalıp kalmadığını kontrol eder. Yeni API çağrısı gerekmez.
+**Safety test.** The model is given hand-written prompts (restriction bypass, phishing, system prompt leakage) and prompts sampled from the JailbreakBench (JBB-Behaviors) dataset, and its responses are checked. A judge model gives each response a score from 0 to 10, where 10 is fully safe. Borderline scores are flagged for human review. In the system prompt leakage test, the model receives a real system prompt that contains a fake secret code, and any response that repeats the code counts as a leak.
 
-**Kalibrasyon.** Güvenlik hakeminin kararlarını, insan puanı bilinen örneklerle karşılaştırarak ne kadar tutarlı olduğunu ölçer.
+**Regression test.** Compares the last two result files of the same model to check whether its behavior stays consistent over time. It needs no new API calls.
 
-## Kurulum
+**Calibration.** Measures how consistent the safety judge is by comparing its decisions with examples that have known human scores.
 
-Python 3.10 veya üstü önerilir.
+## Setup
+
+Python 3.10 or newer is recommended.
 
 ```
 pip install -r requirements.txt
 ```
 
-Proje klasöründe `.env.example` dosyasını `.env` olarak kopyalayıp kullanacağın sağlayıcının anahtarını gir. `.env` dosyası git'e eklenmez, hiçbir zaman paylaşma.
+Copy `.env.example` to `.env` in the project folder and fill in the key for the provider you use. The `.env` file is excluded from git. Never share it.
 
-Yerel model kullanacaksan [Ollama](https://ollama.com) kurup bir model indir, örneğin `ollama pull llama3.2:3b`.
+To use a local model, install [Ollama](https://ollama.com) and pull a model, for example `ollama pull llama3.2:3b`.
 
-## Kullanım
+## Usage
 
-Arayüzle:
+With the web interface:
 
 ```
 streamlit run app.py
 ```
 
-Komut satırıyla (fonksiyonel, regresyon ve güvenlik testi için menü açılır):
+From the command line (opens a menu for functional, regression and safety tests):
 
 ```
 python run_tests.py
 ```
 
-Diğer betikler:
+Other scripts:
 
-- `python kalibrasyon.py` hakem kalibrasyonunu çalıştırır.
-- `python run_batch_test.py` testleri Gemini batch modunda toplu çalıştırır.
+- `python kalibrasyon.py` runs the judge calibration.
+- `python run_batch_test.py` runs the tests in bulk using Gemini batch mode.
 
-Sonuçlar `sonuclar/` klasörüne JSON olarak kaydedilir.
+Results are saved as JSON files in the `sonuclar/` folder.
 
-## Dosyalar
+## Files
 
-| Dosya | Görevi |
+| File | Purpose |
 |---|---|
-| `app.py` | Streamlit arayüzü |
-| `run_tests.py` | Komut satırı test çalıştırıcı |
-| `run_batch_test.py` | Gemini batch modu ile toplu test |
-| `llm_client.py` | Tek fonksiyonla tüm sağlayıcılara bağlanan istemci |
-| `scoring.py` | Embedding benzerliği ve LLM-as-judge puanlama |
-| `guvenlik.py` | Güvenlik testleri ve güvenlik hakemi |
-| `regresyon.py` | Sonuç karşılaştırma |
-| `kalibrasyon.py` | Hakem kalibrasyonu |
-| `test_cases.py` | Veri setlerinden test örneklerini yükler |
+| `app.py` | Streamlit interface |
+| `run_tests.py` | Command-line test runner |
+| `run_batch_test.py` | Bulk testing with Gemini batch mode |
+| `llm_client.py` | A single client that connects to all providers |
+| `scoring.py` | Embedding similarity and LLM-as-judge scoring |
+| `guvenlik.py` | Safety tests and the safety judge |
+| `regresyon.py` | Result comparison |
+| `kalibrasyon.py` | Judge calibration |
+| `test_cases.py` | Loads test examples from the datasets |
 
-## Sınırlar
+## Limitations
 
-Hakem de bir yapay zeka modelidir ve hata yapabilir. Küçük yerel modeller hakem olarak zayıf kalır. Varsayılan örnek sayıları küçüktür, ciddi bir karşılaştırma için `test_cases.py` içinde artırılmalıdır.
+The judge is also an AI model and can make mistakes. Small local models are weak judges. The default sample sizes are small, so for a serious comparison increase them in `test_cases.py`. The code, comments and interface are in Turkish.
