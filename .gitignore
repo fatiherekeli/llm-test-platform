@@ -1,0 +1,16 @@
+# Gizli bilgiler (API anahtarlari)
+.env
+
+# Python onbellegi
+__pycache__/
+*.pyc
+
+# Yedek dosyalar
+*.bak
+
+# Test ciktilari
+sonuclar/
+
+# Sanal ortamlar
+venv/
+.venv/
